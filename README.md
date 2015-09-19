@@ -4,6 +4,9 @@ Introduction
 Codes & slides for the presentation done to the 24th performance user group
 at Paris the 17/09/2015.
 
+# [Slides](http://fabienarcellier.github.io/Perfug-Deep-into-your-application/slides/index.html)
+
+
 Example - Calculus on simple matrix
 ====================================
 
