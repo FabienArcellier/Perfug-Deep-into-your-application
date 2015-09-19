@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Perfug-deep-into-your-application by FabienArcellier</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Perfug-deep-into-your-application</h1>
+        <h2>Start to profile any applications on your linux system that you being either dev or ops</h2>
+        <a href="https://github.com/FabienArcellier/Perfug-Deep-into-your-application" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>Codes &amp; slides for the presentation done to the 24th performance user group
+at Paris the 17/09/2015.</p>
+
+<h1>
+<a id="example---calculus-on-simple-matrix" class="anchor" href="#example---calculus-on-simple-matrix" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example - Calculus on simple matrix</h1>
+
+<pre><code>    cd src/02-matrix
+    make build
+    time valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --collect-jumps=yes ./app 100 100
+</code></pre>
+
+<h1>
+<a id="look-at-symbol-table" class="anchor" href="#look-at-symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Look at symbol table</h1>
+
+<pre><code>    cd src/00-empty
+    make build
+    readelf -s ./app;
+    readelf -s /lib/x86_64-linux-gnu/libc.so.6 | grep malloc
+
+    # Strip effect on the symbol table
+    strip ./app
+    readelf -s ./app;
+</code></pre>
+
+<h1>
+<a id="profiling-callgrind" class="anchor" href="#profiling-callgrind" aria-hidden="true"><span class="octicon octicon-link"></span></a>Profiling Callgrind</h1>
+
+<pre><code>    cd src/02-matrix
+    make build
+
+    # Profiling with callgrind for 100 * 100 matrix
+    time valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --collect-jumps=yes ./app 100 100
+
+    # Perf impact of callgrind
+    time ./app 100 100
+</code></pre>
+
+<h1>
+<a id="thread-dump-on-native-application---gstack" class="anchor" href="#thread-dump-on-native-application---gstack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Thread dump on Native application - Gstack</h1>
+
+<pre><code>    cd ~/sources/memcached
+
+    sudo -s
+</code></pre>
+
+<p>Bash function to generate thread dump for native application as you
+can do with jstack</p>
+
+<pre><code>    gstack() {
+      tmp=$(tempfile)
+      echo thread apply all bt &gt;"$tmp"
+      gdb -batch -nx -q -x "$tmp" -p "$1"
+      rm -f "$tmp"
+    }
+</code></pre>
+
+<p>Use it</p>
+
+<pre><code>    ./memcached &amp;
+
+    while sleep 1; do gstack @pid@ ; done
+</code></pre>
+
+<h1>
+<a id="perf---some-commands" class="anchor" href="#perf---some-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Some commands</h1>
+
+<p>Get a list of avaible counters.</p>
+
+<pre><code>perf list
+</code></pre>
+
+<p>Get an overview of counters for an application</p>
+
+<pre><code>perf stat ./app
+</code></pre>
+
+<h1>
+<a id="perf---impact-on-performance" class="anchor" href="#perf---impact-on-performance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Impact on performance</h1>
+
+<pre><code>    time ./app 500 500
+    time perf record -g ./app 500 500
+</code></pre>
+
+<h1>
+<a id="memcached---symbol-table" class="anchor" href="#memcached---symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Memcached - Symbol table</h1>
+
+<pre><code>    cd ~/sources/memcached
+    readelf -s ./memcached
+</code></pre>
+
+<h1>
+<a id="generate-flamegraph-from-gdb-stack" class="anchor" href="#generate-flamegraph-from-gdb-stack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generate flamegraph from gdb stack</h1>
+
+<pre><code>    cd ~/sources/memcached
+    ./memcached &amp;
+
+    php src/03-memcache-php/memcache-set.php
+
+    while sleep 0.1; do gstack 8748; done &gt; stack.txt
+    cat stack.txt | stackcollapse-gdb.pl | flamegraph.pl &gt; gdb_graph.svg
+</code></pre>
+
+<h1>
+<a id="memcache---profiling-with-perf" class="anchor" href="#memcache---profiling-with-perf" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHE - PROFILING WITH PERF</h1>
+
+<pre><code>    cd ~/sources/memcached
+
+    perf record -g ./memcached
+
+    php src/03-memcache-php/memcache-set.php
+    perf report
+
+    Warning to /proc/sys/kernel/kptr_restrict
+</code></pre>
+
+<h1>
+<a id="memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" class="anchor" href="#memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHED - PROFILING CPU CYCLE WITH PERF - WITH KERNEL STACKTRACE</h1>
+
+<pre><code>    ./memcached &amp;
+    sudo perf record -a -g -p @pid@
+
+    php src/03-memcache-php/memcache-set.php
+    perf report
+</code></pre>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/FabienArcellier/Perfug-Deep-into-your-application/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/FabienArcellier/Perfug-Deep-into-your-application/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/FabienArcellier/Perfug-Deep-into-your-application"></a> is maintained by <a href="https://github.com/FabienArcellier">FabienArcellier</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
