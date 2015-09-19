@@ -6,16 +6,23 @@ at Paris the 17/09/2015.
 
 # [Slides](http://fabienarcellier.github.io/Perfug-Deep-into-your-application/slides/index.html)
 
+I recommand looking at the [presentation](http://fabienarcellier.github.io/Perfug-Deep-into-your-application/slides/index.html) first before playing with commands
+below.
+
+[Link to the website](http://fabienarcellier.github.io/Perfug-Deep-into-your-application)
+
+Notes
+=====
 
 Example - Calculus on simple matrix
-====================================
+------------------------------------
 
 		cd src/02-matrix
 		make build
 		time valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --collect-jumps=yes ./app 100 100
 
 Look at symbol table
-======================
+--------------------
 
 		cd src/00-empty
 		make build
@@ -27,7 +34,7 @@ Look at symbol table
 		readelf -s ./app;
 
 Profiling Callgrind
-====================
+---------------------
 
 		cd src/02-matrix
 		make build
@@ -39,7 +46,7 @@ Profiling Callgrind
 		time ./app 100 100
 
 Thread dump on Native application - Gstack
-===========================================
+--------------------------------------------
 
 		cd ~/sources/memcached
 
@@ -62,7 +69,7 @@ Use it
 		while sleep 1; do gstack @pid@ ; done
 
 Perf - Some commands
-=====================
+---------------------
 
 Get a list of avaible counters.
 
@@ -74,19 +81,19 @@ Get an overview of counters for an application
 
 
 Perf - Impact on performance
-=============================
+-----------------------------
 
 		time ./app 500 500
 		time perf record -g ./app 500 500
 
 Memcached - Symbol table
-=========================
+--------------------------
 
 		cd ~/sources/memcached
 		readelf -s ./memcached
 
-Generate flamegraph from gdb stack
-===================================
+Generate flamegraph from gdb stacktraces
+------------------------------------------
 
 		cd ~/sources/memcached
 		./memcached &
@@ -97,7 +104,7 @@ Generate flamegraph from gdb stack
 		cat stack.txt | stackcollapse-gdb.pl | flamegraph.pl > gdb_graph.svg
 
 MEMCACHE - PROFILING WITH PERF
-===============================
+-------------------------------
 
 		cd ~/sources/memcached
 
@@ -109,7 +116,7 @@ MEMCACHE - PROFILING WITH PERF
 		Warning to /proc/sys/kernel/kptr_restrict
 
 MEMCACHED - PROFILING CPU CYCLE WITH PERF - WITH KERNEL STACKTRACE
-===============================
+-------------------------------------------------------------------
 
 		./memcached &
 		sudo perf record -a -g -p @pid@
