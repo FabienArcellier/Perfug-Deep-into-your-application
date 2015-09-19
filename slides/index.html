@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Deep into the applications ...</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Fabien Arcellier">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<link rel="stylesheet" href="css/prez.css">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Deep into your application ...</h1>
+					<h3>Performance & profiling</h3>
+					<p>
+						<small><a href="http://hakim.se">Fabien Arcellier</a> / <a href="http://twitter.com/farcellier">@farcellier</a></small>
+					</p>
+				</section>
+
+				<section>
+					<h2>About @farcellier</h2>
+					<table>
+						<tr>
+							<td>
+								<ul>
+									<li>Technical Architect, Developer, Life-long learner at <a href="http://www.octo.com/en">Octo Technology</a></li>
+									<br />
+									<li>Favourite subject : Devops, Performance & Software craftmanship</li>
+								</ul>
+							</td>
+							<td>
+								<img src="pictures/3716c92.jpg" style="width:200px" />
+								<img src="pictures/octo.jpg" style="width:200px" />
+							</td>
+						</tr>
+					</table>
+				</section>
+
+				<section>
+					<h2>What's the menu</h2>
+					<ul>
+						<li class="fragment">What means profiling a application ?</li>
+						<li class="fragment">How does it works ?</li>
+						<li class="fragment">Apply on real world application memcached</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Profiling in a few words ...</h2>
+					<a href="https://en.wikipedia.org/wiki/Profiling_(computer_programming)"><img src="pictures/enwiki.png" /></a>
+					<blockquote>
+						<div style="text-align:left">Software profiling is <span class="fragment">a form of dynamic program analysis</span><span class="fragment"> that measures, for example :</span></div>
+						<ul>
+							<li><span class="fragment">the <b>space</b> or <b>time complexity</b> of a program</span></li>
+							<li><span class="fragment">the usage of <b>particular instructions</b></span></li>
+							<li><span class="fragment">the frequency and duration	of <b>function calls</b>, ...</li>
+						</ul>
+					</blockquote>
+				</section>
+
+				<section>
+					<h2>to get this sort of report ...</h2>
+					<img src="pictures/profiling_matrix.png" />
+				</section>
+
+				<section>
+					<h2>to have a better view on what's happens on your hardware, ...</h2>
+					<img src="pictures/perturbation_t.png" />
+					<p class="copyright">@copyright <a href="http://highscalability.com/blog/2015/5/4/elements-of-scale-composing-and-scaling-data-platforms.html">highscalability</a></p>
+					<p></p>
+				</section>
+
+				<section>
+					<h2>to improve your application performance, ...</h2>
+					<img src="pictures/trimaran-macif-5.jpg" />
+					<p>You need measurements to improve continuously your application performance.</p>
+				</section>
+
+				<section>
+					<h2>to understand your application, ...</h2>
+					<img src="pictures/memcache_write_100.png" />
+					<p>You want to understand what is consuming your CPU.</p>
+				</section>
+
+				<section>
+					<h2>to monitor your server, ...</h2>
+					<img src="pictures/profiling_matrix_flamegraph.svg" />
+					<p>You want to understand what your CPUs are doing.</p>
+				</section>
+
+				<section>
+					<h2>At the beginning there is a program ...</h2>
+					<pre class="fragment"><code data-trim>int main(void)
+{
+	return 0;
+}
+
+int func1(void) {
+	return 0;
+}</code></pre>
+					<p class="fragment">Use gcc to compile it</p>
+					<pre class="fragment"><code data-trim>gcc -c app.c -o app</code></pre>
+				</section>
+				<section>
+					<h2>with a simple symbols table ...</h2>
+					<pre><code>readelf - Displays information about ELF files</code></pre>
+					<pre><code data-trim>readelf -s app</code></pre>
+					<pre><code data-trim>45: 0000000000400580     2 FUNC    GLOBAL DEFAULT   13 __libc_csu_fini
+46: 00000000004004f8    11 FUNC    GLOBAL DEFAULT   13 func1
+...
+57: 0000000000601040     0 NOTYPE  GLOBAL DEFAULT   25 _end
+58: 0000000000400400     0 FUNC    GLOBAL DEFAULT   13 _start
+59: 0000000000601038     0 NOTYPE  GLOBAL DEFAULT   25 __bss_start
+60: 00000000004004ed    11 FUNC    GLOBAL DEFAULT   13 main
+...</code></pre>
+
+					<ul>
+						<li>00000000004004ed : Virtual address of the symbol</li>
+						<li>FUNC : type. </li>
+						<li>main : Name of the symbol</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>How it works ?</h2>
+					<table>
+						<tr>
+							<td><img src="pictures/profiling_elf.png" /></td>
+							<td><img src="pictures/frame_pointer_t.png" /></td>
+						</tr>
+					</table>
+					<pre><code data-trim>60: 00000000004004ed    11 FUNC    GLOBAL DEFAULT   13 main</code></pre>
+				</section>
+
+				<section>
+					<h2>Capture events and associate them to symbols</h2>
+					<p>
+						Generally we can list 3 type of profilers :
+					</p>
+					<ul>
+						<li>Instrumented profiling</li>
+						<li>Sampling profiling</li>
+						<li>Event-based profiling (Java, .Net, ...)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Instrumented profiling</h2>
+						<p>Gprof, Callgrind, ...</p>
+						<ul>
+							<li>Pro</li>
+							<ul>
+								<li>Capture all events</li>
+								<li>Granularity</li>
+							</ul>
+							<li>Cons</li>
+							<ul>
+								<li>Slower than raw execution (20 times slower for callgrind)</li>
+								<li>Intrusive (modify code assembly or emulate a virtual processor)</li>
+								<li>What they capture and what they show could differs</li>
+							</ul>
+						</ul>
+				</section>
+
+				<section>
+					<h2>Tooling - Callgrind</h2>
+					<ul>
+						<li>Callgrind is a callgraph analyzer that comes with Valgrind.</li>
+						<li>Valgrind is a virtual machine using just-in-time (JIT) compilation techniques.</li>
+					</ul>
+
+					<img src="pictures/profiling_matrix.png" />
+				</section>
+
+				<section>
+					<h2>Example with a matrix calculus</h2>
+					<img src="pictures/profiling_matrix.png" />
+					<p>You can instrument your execution with callgrind and explore on kcachegrind.</p>
+				</section>
+
+				<section>
+					<h2>Sampling profiling</h2>
+					<p>Perf, Oprofile, Intel Vtune, ...</p>
+					<ul>
+						<li>Pro</li>
+						<ul>
+							<li>~5 or 10% slower than raw execution</li>
+							<li>Run on any code</li>
+						</ul>
+						<li>Cons</li>
+						<ul>
+							<li>Some events are invisible</li>
+						</ul>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Sandbox - Write my own sampling profiler</h2>
+					<p>To understand how simple a sampling profiler is, write your own thread dump using gdb.</p>
+					<pre><code data-trim>gstack() {
+  tmp=$(tempfile)
+  echo thread apply all bt >"$tmp"
+  gdb -batch -nx -q -x "$tmp" -p "$1"
+  rm -f "$tmp"
+}
+					</code></pre>
+					<p>You execute with frequency to know where your program is spending time</p>
+					<pre><code data-trim>while sleep 1; do gstack @pid@ ; done</code></pre>
+				</section>
+
+				<section>
+					<h2>Tooling - Perf & Flamegraph</h2>
+					<ul>
+						<li>Perf instrumentation appears on linux 2.6+ (Ubuntu 11.10 & redhat 6)</li>
+						<li>common interface for hardware counter</li>
+						<li>Flamegraph is actively developped by Brendan Gregg</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Example with a matrix calculus</h2>
+					<object type="image/svg+xml" data="pictures/profiling_matrix_flamegraph.svg" ></object>
+					<p>We don't have any time record on mat_new, even if it's called 3 times.</p>
+				</section>
+
+				<section>
+					<h2>Flamegraph installation</h2>
+					<pre><code data-trim>git clone https://github.com/brendangregg/FlameGraph.git
+sudo ln -s $PWD/flamegraph.pl /usr/bin/flamegraph.pl
+sudo ln -s $PWD/stackcollapse-perf.pl /usr/bin/stackcollapse-perf.pl
+sudo ln -s $PWD/stackcollapse-jstack.pl /usr/bin/stackcollapse-jstack.pl
+sudo ln -s $PWD/stackcollapse-gdb.pl /usr/bin/stackcollapse-gdb.pl</code></pre>
+				</section>
+
+				<section>
+					<h2>What's happends inside memcache ?</h2>
+					<p></p>
+				</section>
+
+				<!-- Example of nested vertical slides -->
+				<section>
+						<h2>Compile memcache</h2>
+						<pre><code data-trim>
+git clone https://github.com/memcached/memcached.git
+cd memcached
+./configure && make
+						</code></pre>
+					</section>
+					<section>
+						<h2>What's hidden inside memcache binary ?</h2>
+						<pre><code>readelf -s ./memcached</code></pre>
+						<pre><code data-trim>
+...
+434: 000000000040edf0    10 FUNC    GLOBAL DEFAULT   13 slabs_rebalancer_resume
+435: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND setuid@@GLIBC_2.2.5
+436: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND event_base_loop
+437: 0000000000412fd0   315 FUNC    GLOBAL DEFAULT   13 pause_threads
+438: 00000000004135e0    10 FUNC    GLOBAL DEFAULT   13 STATS_LOCK
+439: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND getaddrinfo@@GLIBC_2.2.5
+440: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND strerror@@GLIBC_2.2.5
+441: 000000000040f550   201 FUNC    GLOBAL DEFAULT   13 do_item_unlink
+442: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND event_init
+443: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND sleep@@GLIBC_2.2.5
+444: 0000000000412b40   247 FUNC    GLOBAL DEFAULT   13 assoc_delete
+...
+						</code></pre>
+					</section>
+
+					<section>
+						<h2>What's happens when I write 100 record on Memcache</h2>
+						<ul>
+							<li>Doing a test with valgrind (not production friendly)</li>
+							<li>Capture cpu usage with gdb</li>
+							<li>Capture cpu usage with perf_event</li>
+							<li>Capture cache miss with perf_event</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Memcache - Profiling with callgrind</h2>
+						<p>Understand what's happen internally by following execution trace.</p>
+						<pre><code data-trim>valgrind --tool=callgrind --instr-atstart=no ./memcached</code></pre>
+						<p>On another terminal</p>
+						<pre><code data-trim>callgrind_control -i on
+php memcache-set.php
+callgrind_control -i off</code></pre>
+					</section>
+
+					<section>
+						<h2>Memcache - Profiling with callgrind</h2>
+						<pre><code data-trim>kcachegrind callgrind.out.@pid@</code></pre>
+						<img src="pictures/memcache_write_100.png" />
+					</section>
+
+					<section>
+						<h2>Memcache - Profiling with gdb</h2>
+						<pre><code data-trim>
+./memcached &
+
+while sleep 0.1; do gstack 8748; done > stack.txt
+cat stack.txt | stackcollapse-gdb.pl | flamegraph.pl > gdb_graph.svg</code></pre>
+
+						<p>In an another terminal</p>
+						<pre><code data-trim>
+php memcache-set.php
+						</code></pre>
+					</section>
+
+					<section>
+						<h2>Memcache - Profiling with perf</h2>
+						<p>We capture events to build callgraph</p>
+						<pre><code data-trim>perf record -g ./memcached</code></pre>
+						<p>In an another terminal</p>
+						<pre><code data-trim>
+php memcache-set.php
+						</code></pre>
+						<p>To show an interactive report</p>
+						<pre><code data-trim>perf report
+perf report --stdio</code></pre>
+					</section>
+
+					<section>
+						<h2>Memcache - Profiling CPU cycle with perf</h2>
+						<pre><code data-trim>perf script | stackcollapse-perf.pl | flamegraph.pl > graph_stack_missing.svg</code></pre>
+						<a href="pictures/graph_stack_missing.svg">Flamegraph</a>
+						<p>Some information from kernel are missing.</p>
+					</section>
+
+					<section>
+						<h2>Memcached - Profiling CPU cycle with perf - with kernel stacktrace</h2>
+						<pre><code data-trim>./memcached &
+sudo perf record -a -g -p @pid@</code></pre>
+						<p>In an another terminal</p>
+						<pre><code data-trim>
+						php memcache-set.php
+						</code></pre>
+						<p>Generate the flamegraph</p>
+						<pre><code data-trim>perf script | stackcollapse-perf.pl | flamegraph.pl > graph.svg</code></pre>
+						<a href="pictures/graph.svg">Flamegraph</a>
+					</section>
+
+					<section>
+						<h2>Memcached - Profiling Cache miss with perf</h2>
+						<pre><code data-trim>./memcached &
+sudo perf record -e branch-misses -a -g -p @pid@</code></pre>
+					</section>
+
+					<section>
+						<h2>System - What's your system is doing ?</h2>
+						<pre><code data-trim>sudo perf record -a -g</code></pre>
+					</section>
+
+
+					<section>
+						<h2>Use flamegraph with java</h2>
+						<p>You can export a flamegraph from jstack output</p>
+						<a href="pictures/logstash_processing_flamegraph.svg">Logstash contention flamegraph</a>
+					</section>
+
+					<section>
+						<h2>Going further</h2>
+						<ul>
+							<li><a href="https://perf.wiki.kernel.org/index.php/Main_Page">Perf wiki</a></li>
+							<li><a href="http://valgrind.org/docs/manual/cl-manual.html">Callgrind docs</a></li>
+							<li><a href="http://www.brendangregg.com/">Brendan Gregg website</a></li>
+							<li><a href="http://yosefk.com/blog/how-profilers-lie-the-cases-of-gprof-and-kcachegrind.html">How profilers lie: the cases of gprof and KCachegrind</a></li>
+							<li><a href="https://software.intel.com/en-us/intel-vtune-amplifier-xe"> Intel Vtune</a></li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>To summary</h2>
+						<p>Prefer :</p>
+						<ul>
+							<li class="fragment">perf when you are looking for a bottleneck or you want to watch what's happens on a machine</li>
+							<li class="fragment">callgrind when you want to understand what's happen in the code and when the performance is not a requirement</li>
+						</ul>
+					</section>
+
+					<section>
+						<img src="pictures/questions_t.png" />
+					</section>
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				slideNumber: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
