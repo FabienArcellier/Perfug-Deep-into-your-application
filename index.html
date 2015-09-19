@@ -38,16 +38,24 @@ at Paris the 17/09/2015.</p>
 <a id="slides" class="anchor" href="#slides" aria-hidden="true"><span class="octicon octicon-link"></span></a><a href="http://fabienarcellier.github.io/Perfug-Deep-into-your-application/slides/index.html">Slides</a>
 </h1>
 
+<p>I recommand looking at the <a href="http://fabienarcellier.github.io/Perfug-Deep-into-your-application/slides/index.html">presentation</a> first before playing with commands
+below.</p>
+
+<p><a href="http://fabienarcellier.github.io/Perfug-Deep-into-your-application">Link to the website</a></p>
+
 <h1>
-<a id="example---calculus-on-simple-matrix" class="anchor" href="#example---calculus-on-simple-matrix" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example - Calculus on simple matrix</h1>
+<a id="notes" class="anchor" href="#notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Notes</h1>
+
+<h2>
+<a id="example---calculus-on-simple-matrix" class="anchor" href="#example---calculus-on-simple-matrix" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example - Calculus on simple matrix</h2>
 
 <pre><code>    cd src/02-matrix
     make build
     time valgrind --tool=callgrind --simulate-cache=yes --dump-instr=yes --collect-jumps=yes ./app 100 100
 </code></pre>
 
-<h1>
-<a id="look-at-symbol-table" class="anchor" href="#look-at-symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Look at symbol table</h1>
+<h2>
+<a id="look-at-symbol-table" class="anchor" href="#look-at-symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Look at symbol table</h2>
 
 <pre><code>    cd src/00-empty
     make build
@@ -59,8 +67,8 @@ at Paris the 17/09/2015.</p>
     readelf -s ./app;
 </code></pre>
 
-<h1>
-<a id="profiling-callgrind" class="anchor" href="#profiling-callgrind" aria-hidden="true"><span class="octicon octicon-link"></span></a>Profiling Callgrind</h1>
+<h2>
+<a id="profiling-callgrind" class="anchor" href="#profiling-callgrind" aria-hidden="true"><span class="octicon octicon-link"></span></a>Profiling Callgrind</h2>
 
 <pre><code>    cd src/02-matrix
     make build
@@ -72,8 +80,8 @@ at Paris the 17/09/2015.</p>
     time ./app 100 100
 </code></pre>
 
-<h1>
-<a id="thread-dump-on-native-application---gstack" class="anchor" href="#thread-dump-on-native-application---gstack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Thread dump on Native application - Gstack</h1>
+<h2>
+<a id="thread-dump-on-native-application---gstack" class="anchor" href="#thread-dump-on-native-application---gstack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Thread dump on Native application - Gstack</h2>
 
 <pre><code>    cd ~/sources/memcached
 
@@ -98,8 +106,8 @@ can do with jstack</p>
     while sleep 1; do gstack @pid@ ; done
 </code></pre>
 
-<h1>
-<a id="perf---some-commands" class="anchor" href="#perf---some-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Some commands</h1>
+<h2>
+<a id="perf---some-commands" class="anchor" href="#perf---some-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Some commands</h2>
 
 <p>Get a list of avaible counters.</p>
 
@@ -111,22 +119,22 @@ can do with jstack</p>
 <pre><code>perf stat ./app
 </code></pre>
 
-<h1>
-<a id="perf---impact-on-performance" class="anchor" href="#perf---impact-on-performance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Impact on performance</h1>
+<h2>
+<a id="perf---impact-on-performance" class="anchor" href="#perf---impact-on-performance" aria-hidden="true"><span class="octicon octicon-link"></span></a>Perf - Impact on performance</h2>
 
 <pre><code>    time ./app 500 500
     time perf record -g ./app 500 500
 </code></pre>
 
-<h1>
-<a id="memcached---symbol-table" class="anchor" href="#memcached---symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Memcached - Symbol table</h1>
+<h2>
+<a id="memcached---symbol-table" class="anchor" href="#memcached---symbol-table" aria-hidden="true"><span class="octicon octicon-link"></span></a>Memcached - Symbol table</h2>
 
 <pre><code>    cd ~/sources/memcached
     readelf -s ./memcached
 </code></pre>
 
-<h1>
-<a id="generate-flamegraph-from-gdb-stack" class="anchor" href="#generate-flamegraph-from-gdb-stack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generate flamegraph from gdb stack</h1>
+<h2>
+<a id="generate-flamegraph-from-gdb-stacktraces" class="anchor" href="#generate-flamegraph-from-gdb-stacktraces" aria-hidden="true"><span class="octicon octicon-link"></span></a>Generate flamegraph from gdb stacktraces</h2>
 
 <pre><code>    cd ~/sources/memcached
     ./memcached &amp;
@@ -137,8 +145,8 @@ can do with jstack</p>
     cat stack.txt | stackcollapse-gdb.pl | flamegraph.pl &gt; gdb_graph.svg
 </code></pre>
 
-<h1>
-<a id="memcache---profiling-with-perf" class="anchor" href="#memcache---profiling-with-perf" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHE - PROFILING WITH PERF</h1>
+<h2>
+<a id="memcache---profiling-with-perf" class="anchor" href="#memcache---profiling-with-perf" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHE - PROFILING WITH PERF</h2>
 
 <pre><code>    cd ~/sources/memcached
 
@@ -150,8 +158,8 @@ can do with jstack</p>
     Warning to /proc/sys/kernel/kptr_restrict
 </code></pre>
 
-<h1>
-<a id="memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" class="anchor" href="#memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHED - PROFILING CPU CYCLE WITH PERF - WITH KERNEL STACKTRACE</h1>
+<h2>
+<a id="memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" class="anchor" href="#memcached---profiling-cpu-cycle-with-perf---with-kernel-stacktrace" aria-hidden="true"><span class="octicon octicon-link"></span></a>MEMCACHED - PROFILING CPU CYCLE WITH PERF - WITH KERNEL STACKTRACE</h2>
 
 <pre><code>    ./memcached &amp;
     sudo perf record -a -g -p @pid@
@@ -178,6 +186,16 @@ can do with jstack</p>
       </div>
     </div>
 
-  
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-2259959-12");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
