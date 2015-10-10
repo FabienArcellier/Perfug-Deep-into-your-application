@@ -2,3 +2,7 @@ p.copyright {
   font-size: 0.4em;
   margin: 0;
 }
+
+blockquote.small {
+  font-size:0.9em;
+}
